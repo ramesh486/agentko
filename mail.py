@@ -8,7 +8,7 @@ import ssl
 # Configuration
 SMTP_SERVER = "smtp.email.us-ashburn-1.oci.oraclecloud.com"
 SMTP_PORT = 587
-SENDER_EMAIL = 'rameshkrishnan@ebizoncloud.com'
+SENDER_EMAIL = 'support@aisol4biz.ai'
 SENDER_NAME = 'AIAGENTS4BIZ SUPPORT'
 
 def send_email(to_email, subject, body):
