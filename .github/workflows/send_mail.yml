@@ -1,0 +1,39 @@
+name: Send Simple Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      recipient_email:
+        description: 'Recipient email address'
+        required: true
+      email_subject:
+        description: 'Email subject'
+        required: true
+        default: 'Greetings'
+      email_body:
+        description: 'Email content'
+        required: true
+        default: 'Hello, how are you?'
+
+jobs:
+  send_email:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Send email
+      env:
+        SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      run: |
+        python simple_email_sender.py \
+          --to "${{ github.event.inputs.recipient_email }}" \
+          --subject "${{ github.event.inputs.email_subject }}" \
+          --body "${{ github.event.inputs.email_body }}"
