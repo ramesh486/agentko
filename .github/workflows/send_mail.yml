@@ -3,9 +3,6 @@ name: Send Manual Email
 on:
   workflow_dispatch:
     inputs:
-      recipient:
-        description: 'Recipient email address'
-        required: true
       subject:
         description: 'Email subject'
         required: true
@@ -14,6 +11,10 @@ on:
         description: 'Email body content'
         required: true
         default: 'Hello Sir,\n\nHow are you?\n\nBest regards,\nYour Team'
+      attachment:
+        description: 'Attachment file name (optional)'
+        required: false
+        default: 'demo.txt'
 
 jobs:
   send-email:
@@ -21,21 +22,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
+          
       - name: Install dependencies
         run: pip install pyopenssl
-
+        
+      - name: Create demo file if needed
+        run: |
+          if [ "${{ github.event.inputs.attachment }}" = "demo.txt" ]; then
+            echo "This is a demo attachment file created by GitHub Actions." > demo.txt
+            echo "Timestamp: $(date)" >> demo.txt
+          fi
+        
       - name: Send email
         env:
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
           python mail.py \
-            --to "${{ github.event.inputs.recipient }}" \
+            --to "${{ secrets.EMAIL }}" \
             --subject "${{ github.event.inputs.subject }}" \
-            --body "${{ github.event.inputs.body }}"
+            --body "${{ github.event.inputs.body }}" \
+            --attachment "${{ github.event.inputs.attachment }}"
