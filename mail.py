@@ -3,6 +3,9 @@ import email.utils
 import os
 import argparse
 from email.message import EmailMessage
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import ssl
 
 # Configuration
@@ -11,18 +14,33 @@ SMTP_PORT = 587
 SENDER_EMAIL = 'support@aisol4biz.ai'
 SENDER_NAME = 'AIAGENTS4BIZ SUPPORT'
 
-def send_email(to_email, subject, body):
+def send_email(to_email, subject, body, attachment_path=None):
     """
-    Send email via OCI SMTP
+    Send email via OCI SMTP with optional attachment
     """
     try:
-        # Create message
-        msg = EmailMessage()
+        # Create message container
+        msg = MIMEMultipart()
         msg['From'] = email.utils.formataddr((SENDER_NAME, SENDER_EMAIL))
         msg['To'] = to_email
         msg['Subject'] = subject
-        msg.set_content(body)
-
+        
+        # Add body text
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Add attachment if provided
+        if attachment_path and os.path.exists(attachment_path):
+            with open(attachment_path, 'rb') as file:
+                part = MIMEApplication(
+                    file.read(),
+                    Name=os.path.basename(attachment_path)
+                )
+            part['Content-Disposition'] = f'attachment; filename="{os.path.basename(attachment_path)}"'
+            msg.attach(part)
+            print(f"Attachment {attachment_path} added to email")
+        elif attachment_path:
+            print(f"Warning: Attachment file {attachment_path} not found")
+        
         # Send email
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.ehlo()
@@ -42,6 +60,7 @@ if __name__ == "__main__":
     parser.add_argument('--to', required=True, help='Recipient email address')
     parser.add_argument('--subject', required=True, help='Email subject')
     parser.add_argument('--body', required=True, help='Email body content')
+    parser.add_argument('--attachment', help='Path to attachment file')
     
     args = parser.parse_args()
-    send_email(args.to, args.subject, args.body)
+    send_email(args.to, args.subject, args.body, args.attachment)
