@@ -31,13 +31,6 @@ jobs:
       - name: Install dependencies
         run: pip install pyopenssl
         
-      - name: Create demo file if needed
-        run: |
-          if [ "${{ github.event.inputs.attachment }}" = "demo.txt" ]; then
-            echo "This is a demo attachment file created by GitHub Actions." > demo.txt
-            echo "Timestamp: $(date)" >> demo.txt
-          fi
-        
       - name: Send email
         env:
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
@@ -47,4 +40,4 @@ jobs:
             --to "${{ secrets.EMAIL }}" \
             --subject "${{ github.event.inputs.subject }}" \
             --body "${{ github.event.inputs.body }}" \
-            --attachment "${{ github.event.inputs.attachment }}"
+            --attachment "demo.txt"
